@@ -1,0 +1,33 @@
+version: "3.9"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Development override — hot-reload, exposed ports, volume mounts.
+# Usage: docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+  postgres:
+    ports:
+      - "5432:5432"
+
+  node-api:
+    build:
+      target: builder
+    command: ["npx", "ts-node-dev", "--respawn", "--transpile-only", "src/interfaces/http/server.ts"]
+    environment:
+      NODE_ENV: development
+      LOG_LEVEL: debug
+    volumes:
+      - ./src:/app/src:ro
+    ports:
+      - "3000:3000"
+      - "9229:9229"  # Node.js inspector
+
+  python-analytics:
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    environment:
+      DEBUG: "true"
+    volumes:
+      - ./services/analytics/app:/app/app:ro
+    ports:
+      - "8000:8000"
