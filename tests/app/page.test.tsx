@@ -4,45 +4,53 @@ import Home from '../../app/page';
 
 const html = renderToStaticMarkup(createElement(Home));
 
-describe('Landing page (ac-1: structure)', () => {
-  it('renders without throwing and produces non-empty HTML', () => {
+describe('Landing page (ac-1: page renders)', () => {
+  it('renders without throwing and produces non-empty HTML with a <main>', () => {
     expect(typeof html).toBe('string');
     expect(html.length).toBeGreaterThan(0);
     expect(html).toMatch(/<main\b/);
   });
 });
 
-describe('Landing page (ac-2: title)', () => {
-  it('shows the "Habit Tracker" title inside an <h1>', () => {
-    expect(html).toMatch(/<h1[^>]*>[^<]*Habit Tracker[^<]*<\/h1>/);
+describe('Landing page (ac-2: at least 3 habit cards)', () => {
+  it('renders a list with at least 3 habit items', () => {
+    const listMatch = html.match(/<ul\b[^>]*>([\s\S]*?)<\/ul>/);
+    expect(listMatch).not.toBeNull();
+    const listInner = listMatch![1];
+    const items = listInner.match(/<li\b/g) ?? [];
+    expect(items.length).toBeGreaterThanOrEqual(3);
   });
 });
 
-describe('Landing page (ac-3: greeting/intro)', () => {
-  it('renders a short greeting/intro after the title', () => {
-    const titleIdx = html.search(/<h1\b/);
-    const afterTitle = html.slice(titleIdx);
-    expect(titleIdx).toBeGreaterThanOrEqual(0);
-    expect(afterTitle).toMatch(/<p\b/);
-    expect(afterTitle).toMatch(/Hola/);
-    expect(afterTitle).toMatch(/hábitos/);
+describe('Landing page (ac-3: each card shows name + frequency badge)', () => {
+  it('each habit card contains a heading (name) and a badge with diario/semanal', () => {
+    const listMatch = html.match(/<ul\b[^>]*>([\s\S]*?)<\/ul>/);
+    expect(listMatch).not.toBeNull();
+    const cards = listMatch![1].match(/<li\b[\s\S]*?<\/li>/g) ?? [];
+    expect(cards.length).toBeGreaterThanOrEqual(3);
+
+    for (const card of cards) {
+      // Name rendered inside an h2/h3
+      expect(card).toMatch(/<h[23]\b[^>]*>[\s\S]*?\S[\s\S]*?<\/h[23]>/);
+      // Frequency badge — a span containing diario or semanal
+      expect(card).toMatch(/<span\b[^>]*>[\s\S]*?\b(?:diario|semanal)\b[\s\S]*?<\/span>/);
+    }
   });
 });
 
-describe('Landing page (ac-4: empty state with CTA)', () => {
-  it('shows an empty-state message and a "Crear hábito" button', () => {
-    expect(html).toMatch(/Todavía no tenés hábitos/);
-    expect(html).toMatch(/<button[^>]*>[\s\S]*?Crear hábito[\s\S]*?<\/button>/);
+describe('Landing page (ac-4: responsive grid 1/2-3 columns)', () => {
+  it('uses a Tailwind grid with 1 column on mobile and 2-3 columns on larger viewports', () => {
+    const listMatch = html.match(/<ul\b[^>]*>/);
+    expect(listMatch).not.toBeNull();
+    const openTag = listMatch![0];
+    expect(openTag).toMatch(/\bgrid\b/);
+    expect(openTag).toMatch(/\bgrid-cols-1\b/);
+    expect(openTag).toMatch(/\b(?:sm|md|lg|xl):grid-cols-[23]\b/);
   });
 });
 
-describe('Landing page (ac-5: responsive, breathing layout)', () => {
-  it('uses responsive Tailwind breakpoints and generous spacing utilities', () => {
-    // responsive breakpoints prove it adapts to mobile and desktop
-    expect(html).toMatch(/\bsm:/);
-    // generous vertical rhythm proves the design breathes
-    expect(html).toMatch(/\bpy-(?:1[6-9]|2\d|3\d)\b/);
-    // a container that caps width on large screens
-    expect(html).toMatch(/\bmax-w-/);
+describe('Landing page (ac-5: empty state hidden when habits exist)', () => {
+  it('does not render the "Todavía no tenés hábitos" empty-state copy when habits are present', () => {
+    expect(html).not.toMatch(/Todavía no tenés hábitos/);
   });
 });
