@@ -30,3 +30,45 @@ export function addHabit(habits: Habit[], draft: HabitDraft): Habit[] {
   const id = `h-${Date.now().toString(36)}-${counter.toString(36)}`;
   return [...habits, { id, name: draft.name, frequency: draft.frequency }];
 }
+
+export type CompletionMap = Record<string, string>;
+
+export function todayKey(now: Date = new Date()): string {
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  const d = String(now.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+export function isCompletedToday(
+  state: CompletionMap,
+  habitId: string,
+  today: string,
+): boolean {
+  return state[habitId] === today;
+}
+
+export function toggleCompletion(
+  state: CompletionMap,
+  habitId: string,
+  today: string,
+): CompletionMap {
+  if (state[habitId] === today) {
+    const next = { ...state };
+    delete next[habitId];
+    return next;
+  }
+  return { ...state, [habitId]: today };
+}
+
+export function loadCompletionsForToday(
+  stored: CompletionMap | null | undefined,
+  today: string,
+): CompletionMap {
+  if (!stored) return {};
+  const next: CompletionMap = {};
+  for (const [habitId, day] of Object.entries(stored)) {
+    if (day === today) next[habitId] = day;
+  }
+  return next;
+}

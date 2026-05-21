@@ -1,8 +1,19 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { CreateHabitModal } from './components/CreateHabitModal';
-import { addHabit, type Frequency, type Habit } from './lib/habits';
+import { HabitCard } from './components/HabitCard';
+import {
+  addHabit,
+  isCompletedToday,
+  loadCompletionsForToday,
+  toggleCompletion,
+  todayKey,
+  type CompletionMap,
+  type Habit,
+} from './lib/habits';
+
+const COMPLETIONS_STORAGE_KEY = 'habit-tracker:completions';
 
 const initialHabits: Habit[] = [
   { id: 'h1', name: 'Leer 20 minutos', frequency: 'diario' },
@@ -10,18 +21,44 @@ const initialHabits: Habit[] = [
   { id: 'h3', name: 'Meditar', frequency: 'diario' },
 ];
 
-const frequencyBadgeStyles: Record<Frequency, string> = {
-  diario: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300',
-  semanal: 'border-sky-500/30 bg-sky-500/10 text-sky-300',
-};
-
 export default function Home() {
   const [habits, setHabits] = useState<Habit[]>(initialHabits);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [today, setToday] = useState<string>(() => todayKey());
+  const [completions, setCompletions] = useState<CompletionMap>({});
   const hasHabits = habits.length > 0;
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const currentDay = todayKey();
+    setToday(currentDay);
+    try {
+      const raw = window.localStorage.getItem(COMPLETIONS_STORAGE_KEY);
+      const parsed = raw ? (JSON.parse(raw) as CompletionMap) : null;
+      setCompletions(loadCompletionsForToday(parsed, currentDay));
+    } catch {
+      setCompletions({});
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      window.localStorage.setItem(
+        COMPLETIONS_STORAGE_KEY,
+        JSON.stringify(completions),
+      );
+    } catch {
+      // ignore quota / privacy-mode failures
+    }
+  }, [completions]);
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
+
+  const handleToggleCompletion = (habitId: string) => {
+    setCompletions((current) => toggleCompletion(current, habitId, today));
+  };
 
   return (
     <main className="min-h-screen bg-zinc-950 text-zinc-100">
@@ -59,19 +96,12 @@ export default function Home() {
               className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3"
             >
               {habits.map((habit) => (
-                <li
+                <HabitCard
                   key={habit.id}
-                  className="group flex flex-col justify-between gap-4 rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6 transition hover:border-emerald-500/40 hover:bg-zinc-900"
-                >
-                  <h3 className="text-lg font-medium text-zinc-100 sm:text-xl">
-                    {habit.name}
-                  </h3>
-                  <span
-                    className={`inline-flex w-fit items-center gap-2 rounded-full border px-3 py-1 text-xs font-mono uppercase tracking-[0.18em] ${frequencyBadgeStyles[habit.frequency]}`}
-                  >
-                    {habit.frequency}
-                  </span>
-                </li>
+                  habit={habit}
+                  isCompleted={isCompletedToday(completions, habit.id, today)}
+                  onToggle={() => handleToggleCompletion(habit.id)}
+                />
               ))}
             </ul>
           ) : (
