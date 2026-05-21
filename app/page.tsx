@@ -1,26 +1,27 @@
-type Frequency = 'diario' | 'semanal';
+'use client';
 
-type Habit = {
-  id: string;
-  name: string;
-  frequency: Frequency;
-};
+import { useState } from 'react';
+import { CreateHabitModal } from './components/CreateHabitModal';
+import { addHabit, type Frequency, type Habit } from './lib/habits';
 
-const habits: Habit[] = [
+const initialHabits: Habit[] = [
   { id: 'h1', name: 'Leer 20 minutos', frequency: 'diario' },
   { id: 'h2', name: 'Salir a correr', frequency: 'semanal' },
   { id: 'h3', name: 'Meditar', frequency: 'diario' },
 ];
 
 const frequencyBadgeStyles: Record<Frequency, string> = {
-  diario:
-    'border-emerald-500/30 bg-emerald-500/10 text-emerald-300',
-  semanal:
-    'border-sky-500/30 bg-sky-500/10 text-sky-300',
+  diario: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300',
+  semanal: 'border-sky-500/30 bg-sky-500/10 text-sky-300',
 };
 
 export default function Home() {
+  const [habits, setHabits] = useState<Habit[]>(initialHabits);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const hasHabits = habits.length > 0;
+
+  const openModal = () => setIsModalOpen(true);
+  const closeModal = () => setIsModalOpen(false);
 
   return (
     <main className="min-h-screen bg-zinc-950 text-zinc-100">
@@ -37,6 +38,15 @@ export default function Home() {
             Hola 👋 Llevá tus hábitos diarios con calma. Sumá uno, marcá el día,
             y mirá cómo crecen las rachas con el tiempo.
           </p>
+          <div className="pt-2">
+            <button
+              type="button"
+              onClick={openModal}
+              className="inline-flex items-center justify-center rounded-full bg-emerald-500 px-5 py-2.5 text-sm font-medium text-zinc-950 transition hover:bg-emerald-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950"
+            >
+              Crear hábito
+            </button>
+          </div>
         </header>
 
         <section
@@ -78,6 +88,7 @@ export default function Home() {
                 </p>
                 <button
                   type="button"
+                  onClick={openModal}
                   className="mt-8 inline-flex items-center justify-center rounded-full bg-emerald-500 px-6 py-3 text-sm font-medium text-zinc-950 transition hover:bg-emerald-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950 sm:text-base"
                 >
                   Crear hábito
@@ -91,6 +102,12 @@ export default function Home() {
           Construido con calma · Habit Tracker
         </footer>
       </div>
+
+      <CreateHabitModal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        onCreate={(draft) => setHabits((current) => addHabit(current, draft))}
+      />
     </main>
   );
 }

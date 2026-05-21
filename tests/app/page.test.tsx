@@ -54,3 +54,20 @@ describe('Landing page (ac-5: empty state hidden when habits exist)', () => {
     expect(html).not.toMatch(/Todavía no tenés hábitos/);
   });
 });
+
+describe('Landing page T3 (page renders the habit list view)', () => {
+  it('renders the landing page so the user can reach the create-habit flow', () => {
+    expect(html).toMatch(/<main\b/);
+    expect(html).toMatch(/<ul\b[^>]*>/);
+  });
+});
+
+describe('Landing page T3 (modal trigger button exists)', () => {
+  it('renders a "Crear hábito" button that the user can click to open the modal', () => {
+    expect(html).toMatch(/<button[^>]*type="button"[\s\S]*?Crear h[áa]bito[\s\S]*?<\/button>/);
+  });
+
+  it('does not render the modal markup on initial load (modal starts closed)', () => {
+    expect(html).not.toMatch(/role="dialog"/);
+  });
+});
