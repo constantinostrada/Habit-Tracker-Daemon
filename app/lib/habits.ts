@@ -11,6 +11,12 @@ export type HabitDraft = {
   frequency: Frequency;
 };
 
+export const INITIAL_HABITS: Habit[] = [
+  { id: 'h1', name: 'Leer 20 minutos', frequency: 'diario' },
+  { id: 'h2', name: 'Salir a correr', frequency: 'semanal' },
+  { id: 'h3', name: 'Meditar', frequency: 'diario' },
+];
+
 export type NameValidationResult =
   | { ok: true; name: string }
   | { ok: false; error: string };
@@ -29,6 +35,10 @@ export function addHabit(habits: Habit[], draft: HabitDraft): Habit[] {
   counter += 1;
   const id = `h-${Date.now().toString(36)}-${counter.toString(36)}`;
   return [...habits, { id, name: draft.name, frequency: draft.frequency }];
+}
+
+export function removeHabit(habits: Habit[], habitId: string): Habit[] {
+  return habits.filter((h) => h.id !== habitId);
 }
 
 export type CompletionMap = Record<string, string>;
@@ -70,5 +80,15 @@ export function loadCompletionsForToday(
   for (const [habitId, day] of Object.entries(stored)) {
     if (day === today) next[habitId] = day;
   }
+  return next;
+}
+
+export function clearCompletionsForHabit(
+  state: CompletionMap,
+  habitId: string,
+): CompletionMap {
+  if (!(habitId in state)) return state;
+  const next = { ...state };
+  delete next[habitId];
   return next;
 }

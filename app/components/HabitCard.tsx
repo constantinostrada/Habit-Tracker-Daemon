@@ -11,19 +11,29 @@ type Props = {
   habit: Habit;
   isCompleted: boolean;
   onToggle: () => void;
+  onRequestDelete: () => void;
 };
 
-export function HabitCard({ habit, isCompleted, onToggle }: Props) {
+export function HabitCard({ habit, isCompleted, onToggle, onRequestDelete }: Props) {
   return (
     <li
       data-completed={isCompleted ? 'true' : 'false'}
-      className={`group flex flex-col justify-between gap-4 rounded-2xl border p-6 transition ${
+      className={`group relative flex flex-col justify-between gap-4 rounded-2xl border p-6 transition ${
         isCompleted
           ? 'border-emerald-500/60 bg-emerald-500/10'
           : 'border-zinc-800 bg-zinc-900/60 hover:border-emerald-500/40 hover:bg-zinc-900'
       }`}
     >
-      <div className="flex items-start justify-between gap-3">
+      <button
+        type="button"
+        name="delete-habit"
+        aria-label={`Borrar ${habit.name}`}
+        onClick={onRequestDelete}
+        className="absolute right-3 top-3 inline-flex h-7 w-7 items-center justify-center rounded-full border border-zinc-700 bg-zinc-900/80 text-xs text-zinc-400 opacity-0 transition hover:border-rose-500/60 hover:text-rose-300 focus:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-300 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950 group-hover:opacity-100"
+      >
+        <span aria-hidden="true">×</span>
+      </button>
+      <div className="flex items-start justify-between gap-3 pr-8">
         <h3 className="text-lg font-medium text-zinc-100 sm:text-xl">
           {habit.name}
         </h3>
