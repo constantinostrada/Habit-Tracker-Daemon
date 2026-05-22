@@ -1,31 +1,31 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { ConfirmDeleteHabitModal } from './components/ConfirmDeleteHabitModal';
 import { CreateHabitModal } from './components/CreateHabitModal';
+import { EmptyHabitsState } from './components/EmptyHabitsState';
 import { HabitCard } from './components/HabitCard';
 import {
+  INITIAL_HABITS,
   addHabit,
+  clearCompletionsForHabit,
   isCompletedToday,
   loadCompletionsForToday,
-  toggleCompletion,
+  removeHabit,
   todayKey,
+  toggleCompletion,
   type CompletionMap,
   type Habit,
 } from './lib/habits';
 
 const COMPLETIONS_STORAGE_KEY = 'habit-tracker:completions';
 
-const initialHabits: Habit[] = [
-  { id: 'h1', name: 'Leer 20 minutos', frequency: 'diario' },
-  { id: 'h2', name: 'Salir a correr', frequency: 'semanal' },
-  { id: 'h3', name: 'Meditar', frequency: 'diario' },
-];
-
 export default function Home() {
-  const [habits, setHabits] = useState<Habit[]>(initialHabits);
+  const [habits, setHabits] = useState<Habit[]>(INITIAL_HABITS);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [today, setToday] = useState<string>(() => todayKey());
   const [completions, setCompletions] = useState<CompletionMap>({});
+  const [pendingDelete, setPendingDelete] = useState<Habit | null>(null);
   const hasHabits = habits.length > 0;
 
   useEffect(() => {
@@ -58,6 +58,16 @@ export default function Home() {
 
   const handleToggleCompletion = (habitId: string) => {
     setCompletions((current) => toggleCompletion(current, habitId, today));
+  };
+
+  const requestDelete = (habit: Habit) => setPendingDelete(habit);
+  const cancelDelete = () => setPendingDelete(null);
+  const confirmDelete = () => {
+    if (!pendingDelete) return;
+    const targetId = pendingDelete.id;
+    setHabits((current) => removeHabit(current, targetId));
+    setCompletions((current) => clearCompletionsForHabit(current, targetId));
+    setPendingDelete(null);
   };
 
   return (
@@ -101,30 +111,12 @@ export default function Home() {
                   habit={habit}
                   isCompleted={isCompletedToday(completions, habit.id, today)}
                   onToggle={() => handleToggleCompletion(habit.id)}
+                  onRequestDelete={() => requestDelete(habit)}
                 />
               ))}
             </ul>
           ) : (
-            <div className="flex flex-1 items-center justify-center">
-              <div className="w-full rounded-2xl border border-dashed border-zinc-700/70 bg-zinc-900/40 px-6 py-14 text-center sm:px-12 sm:py-20">
-                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/10 text-2xl">
-                  ✨
-                </div>
-                <h2 className="mt-6 text-xl font-medium text-zinc-100 sm:text-2xl">
-                  Todavía no tenés hábitos
-                </h2>
-                <p className="mt-3 text-sm leading-relaxed text-zinc-400 sm:text-base">
-                  Creá el primero y empezá a registrar tu progreso día a día.
-                </p>
-                <button
-                  type="button"
-                  onClick={openModal}
-                  className="mt-8 inline-flex items-center justify-center rounded-full bg-emerald-500 px-6 py-3 text-sm font-medium text-zinc-950 transition hover:bg-emerald-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950 sm:text-base"
-                >
-                  Crear hábito
-                </button>
-              </div>
-            </div>
+            <EmptyHabitsState onCreate={openModal} />
           )}
         </section>
 
@@ -137,6 +129,12 @@ export default function Home() {
         isOpen={isModalOpen}
         onClose={closeModal}
         onCreate={(draft) => setHabits((current) => addHabit(current, draft))}
+      />
+      <ConfirmDeleteHabitModal
+        isOpen={pendingDelete !== null}
+        habitName={pendingDelete?.name ?? ''}
+        onCancel={cancelDelete}
+        onConfirm={confirmDelete}
       />
     </main>
   );
