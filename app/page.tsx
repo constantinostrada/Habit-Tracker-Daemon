@@ -68,9 +68,14 @@ export default function Home() {
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
             v0 · landing
           </span>
-          <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
-            Habit Tracker
-          </h1>
+          <div>
+            <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
+              Habit Tracker
+            </h1>
+            <p className="mt-2 text-sm text-zinc-500 sm:text-base">
+              Construido con calma by coco
+            </p>
+          </div>
           <p className="max-w-xl text-base leading-relaxed text-zinc-400 sm:text-lg">
             Hola 👋 Llevá tus hábitos diarios con calma. Sumá uno, marcá el día,
             y mirá cómo crecen las rachas con el tiempo.
