@@ -128,8 +128,9 @@ export default function Home() {
           )}
         </section>
 
-        <footer className="mt-16 text-center text-xs text-zinc-500 sm:mt-24">
-          Construido con calma · Habit Tracker
+        <p className="mt-16 text-center text-sm text-zinc-400 sm:mt-24">Gracias</p>
+        <footer className="mt-4 border-t border-zinc-800/80 pt-8 text-center text-xs text-zinc-500">
+          © {new Date().getFullYear()} Habit Tracker — Built with calma
         </footer>
       </div>
 
