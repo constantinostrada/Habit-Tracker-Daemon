@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { CreateHabitModal } from './components/CreateHabitModal';
 import { HabitCard } from './components/HabitCard';
@@ -75,7 +76,7 @@ export default function Home() {
             Hola 👋 Llevá tus hábitos diarios con calma. Sumá uno, marcá el día,
             y mirá cómo crecen las rachas con el tiempo.
           </p>
-          <div className="pt-2">
+          <div className="flex flex-wrap items-center gap-3 pt-2">
             <button
               type="button"
               onClick={openModal}
@@ -83,6 +84,12 @@ export default function Home() {
             >
               Crear hábito
             </button>
+            <Link
+              href="/habits"
+              className="inline-flex items-center justify-center rounded-full bg-emerald-500 px-5 py-2.5 text-sm font-medium text-zinc-950 transition hover:bg-emerald-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950"
+            >
+              Ver hábitos
+            </Link>
           </div>
         </header>
 
